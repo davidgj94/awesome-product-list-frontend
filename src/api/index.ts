@@ -4,7 +4,8 @@ import axios, { AxiosResponse } from 'axios';
 
 const axiosInstance = axios.create({ baseURL: `${config.BACKEND_URL}/api/v1` });
 
-export const setAuth = (accessToken: string) =>
+export const setAuth = (accessToken?: string | null) =>
+  accessToken &&
   axiosInstance.interceptors.request.use((config) => {
     config.headers = { ...config.headers, Authorization: `Bearer ${accessToken}` };
   });

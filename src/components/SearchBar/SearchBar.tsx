@@ -1,23 +1,32 @@
 import React, { useCallback } from 'react';
+import { debounce } from 'lodash';
+
+import { useAppDispatch } from '../../hooks';
+import { actions } from '../../redux/store';
+
 import styles from './styles.module.css';
 import trending from '../../../src/assets/images/trending.png';
 
 interface ISearchBarProps {
-  setFavClicked: (isClicked: boolean) => void;
-  favClicked: boolean;
-  onChangeText: (text: string) => void;
+  toggleShowFav: () => void;
 }
 
-const SearchBar: React.FC<ISearchBarProps> = ({ setFavClicked, favClicked, onChangeText }) => {
-  const swapFav = useCallback(() => {
-    setFavClicked(!favClicked);
-  }, [favClicked]);
+const SearchBar = ({ toggleShowFav }: ISearchBarProps) => {
+  const dispatch = useAppDispatch();
+
+  const onChangeText = useCallback(
+    debounce((text: string) => {
+      dispatch(actions.productActions.setText(text));
+      dispatch(actions.productActions.fetchProducts());
+    }, 500),
+    []
+  );
 
   return (
     <div className={`${styles.searchBarContainer}`}>
       <div className={`${styles.searchBarTitleContainer}`}>
         <img src={trending} className={`${styles.trending}`} />
-        <button className={`${styles.myFaves}`} onClick={swapFav}>
+        <button className={`${styles.myFaves}`} onClick={toggleShowFav}>
           My faves
         </button>
       </div>

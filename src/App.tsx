@@ -1,35 +1,34 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { view } from '@risingstack/react-easy-state';
-import { debounce } from 'lodash';
+import { Provider } from 'react-redux';
 
-import './App.css';
+import { store, actions } from './redux/store';
+import { useToggle, useAppDispatch } from './hooks';
+import { setAuth } from './api';
 
 import ProductsList from './components/ProductsList';
 import SearchBar from './components/SearchBar';
-import Store from './Store';
 
-const App: React.FC = () => {
-  const onChangeText = useCallback(
-    debounce((text: string) => {
-      Store.clear();
-      Store.setText(text);
-    }, 500),
-    []
-  );
+import './App.css';
+
+const App = () => {
+  const dispatch = useAppDispatch();
+  const [showFavs, toggleShowFav] = useToggle();
 
   useEffect(() => {
-    Store.getProducts();
-  }, [Store.text]);
-
-  const [favClicked, setFavClicked] = useState(false);
+    setAuth(localStorage.getItem('productList.accesToken'));
+    dispatch(actions.productActions.fetchProducts());
+    dispatch(actions.favActions.getFavorites());
+  }, []);
 
   return (
-    <BrowserRouter>
-      <SearchBar setFavClicked={setFavClicked} favClicked={favClicked} onChangeText={onChangeText} />
-      <ProductsList favClicked={favClicked} />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <SearchBar toggleShowFav={toggleShowFav} />
+        <ProductsList favClicked={showFavs} />
+      </BrowserRouter>
+    </Provider>
   );
 };
 
-export default view(App);
+export default App;

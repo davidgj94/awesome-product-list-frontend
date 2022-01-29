@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useAppDispatch } from '../../hooks';
+import { actions } from '../../redux/store';
 import { Product } from '../../interfaces';
 import OrderInfo from '../OrderInfo';
 import moment from 'moment';
@@ -10,7 +12,7 @@ import clock from '../../../src/assets/images/clock.svg';
 
 interface IProductItemProps {
   product: Product;
-  favs: string[];
+  showFav: boolean;
 }
 
 const getTimeDiff = (lastOrder: Date): number => {
@@ -18,14 +20,16 @@ const getTimeDiff = (lastOrder: Date): number => {
   return now.diff(moment(lastOrder), 'minute');
 };
 
-const ProductItem: React.FC<IProductItemProps> = ({ product, favs }) => {
-  const [isFav, setIsFav] = useState<boolean>(false);
-  useEffect(() => {
-    if (favs.filter((fav: string) => fav === product._id).length) setIsFav(true);
-  }, []);
-  const swapFav = useCallback(() => {
-    setIsFav(!isFav);
-  }, [isFav]);
+const ProductItem: React.FC<IProductItemProps> = ({ product, showFav }) => {
+  // const [isFav, setIsFav] = useState<boolean>(false);
+  // useEffect(() => {
+  //   if (favs.filter((fav: string) => fav === product._id).length) setIsFav(true);
+  // }, []);
+  // const swapFav = useCallback(() => {
+  //   setIsFav(!isFav);
+  // }, [isFav]);
+
+  const dispatch = useAppDispatch();
 
   const minutesFromLastOrder = useMemo(
     () =>
@@ -37,24 +41,28 @@ const ProductItem: React.FC<IProductItemProps> = ({ product, favs }) => {
     [product]
   );
 
+  // const saveFav = () => {
+  //   swapFav();
+  //   let currentFavs: string[] = JSON.parse(localStorage.getItem('favs') ?? '[]');
+  //   console.log(product);
+  //   if (!currentFavs.includes(product._id)) {
+  //     currentFavs.push(product._id);
+  //     localStorage.setItem('favs', JSON.stringify(currentFavs));
+  //   } else {
+  //     currentFavs = currentFavs.filter((id) => id !== product._id);
+  //     localStorage.setItem('favs', JSON.stringify(currentFavs));
+  //   }
+  // };
+
   const saveFav = () => {
-    swapFav();
-    let currentFavs: string[] = JSON.parse(localStorage.getItem('favs') ?? '[]');
-    console.log(product);
-    if (!currentFavs.includes(product._id)) {
-      currentFavs.push(product._id);
-      localStorage.setItem('favs', JSON.stringify(currentFavs));
-    } else {
-      currentFavs = currentFavs.filter((id) => id !== product._id);
-      localStorage.setItem('favs', JSON.stringify(currentFavs));
-    }
+    dispatch(actions.favActions.saveFavorite(product._id));
   };
 
   return (
     <div className={`${styles.container}`}>
       <div className={`${styles.titleContainer}`}>
         <p className={`${styles.title}`}>{product.name}</p>
-        <input type="image" alt="fav" src={isFav ? heart : favIcon} onClick={saveFav} className={`${styles.input}`} />
+        <input type="image" alt="fav" src={showFav ? heart : favIcon} onClick={saveFav} className={`${styles.input}`} />
       </div>
       <div>
         <p className={`${styles.restaurant}`}>

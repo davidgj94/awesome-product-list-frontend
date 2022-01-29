@@ -8,12 +8,12 @@ interface FavState {
 
 const initialState: FavState = { products: [] };
 
-export const saveFavorite = createAsyncThunk(
+const saveFavorite = createAsyncThunk(
   'favorites/SaveFav',
   async (productId: string) => await API.saveFavorite(productId)
 );
 
-export const getFavorites = createAsyncThunk('favorites/getFavs', async () => await API.getFavorites());
+const getFavorites = createAsyncThunk('favorites/getFavs', async () => await API.getFavorites());
 
 const slice = createSlice({
   name: 'favorites',
@@ -34,5 +34,7 @@ const slice = createSlice({
     });
   },
 });
+
+export const actions = { ...slice.actions, saveFavorite, getFavorites };
 
 export default slice.reducer;

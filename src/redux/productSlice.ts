@@ -7,12 +7,13 @@ interface ProductsState {
   products: Product[];
   offset: number;
   hasNext: boolean;
+
   text?: string;
 }
 
 const initialState: ProductsState = { products: [], hasNext: true, offset: 0 };
 
-export const fetchProducts = createAsyncThunk<GetProductsResponse | undefined, any, { state: RootState }>(
+const fetchProducts = createAsyncThunk<GetProductsResponse | undefined, undefined, { state: RootState }>(
   'products/fetchProducts',
   async (arg, thunkApi) => {
     const {
@@ -27,7 +28,7 @@ const slice = createSlice({
   initialState,
   reducers: {
     resetProducts: () => initialState,
-    setText: (state, action: PayloadAction<{ text: string }>) => ({ ...initialState, text: action.payload.text }),
+    setText: (state, action: PayloadAction<string>) => ({ ...initialState, text: action.payload }),
   },
   extraReducers: (builder) => {
     builder.addCase(fetchProducts.fulfilled, (state, action) => {
@@ -41,6 +42,6 @@ const slice = createSlice({
   },
 });
 
-export const { resetProducts, setText } = slice.actions;
+export const actions = { ...slice.actions, fetchProducts };
 
 export default slice.reducer;

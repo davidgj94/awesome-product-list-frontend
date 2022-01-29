@@ -1,44 +1,57 @@
 import React, { useEffect, useMemo } from 'react';
-import { view } from '@risingstack/react-easy-state';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import Store from '../../Store';
-import styles from './styles.module.css';
-import { Product } from '../../interfaces';
+
+import { useAppSelector, useAppDispatch } from '../../hooks';
+import { actions } from '../../redux/store';
 
 import ProductItem from '../ProductItem';
+
+import styles from './styles.module.css';
 
 interface IProductListProps {
   favClicked: boolean;
 }
 
-const ProductsList: React.FC<IProductListProps> = ({ favClicked }) => {
-  const myFavs: string[] = JSON.parse(localStorage.getItem('favs') ?? '[]');
-  const trendingProducts: Product[] = useMemo(() => {
-    if (!myFavs) return Store.data;
-    return favClicked && myFavs.length ? Store.data.filter((product) => myFavs.indexOf(product._id) >= 0) : Store.data;
-  }, [Store, favClicked, myFavs]);
+const ProductsList = ({ favClicked }: IProductListProps) => {
+  // const myFavs: string[] = JSON.parse(localStorage.getItem('favs') ?? '[]');
+  // const trendingProducts: Product[] = useMemo(() => {
+  //   if (!myFavs) return Store.data;
+  //   return favClicked && myFavs.length ? Store.data.filter((product) => myFavs.indexOf(product._id) >= 0) : Store.data;
+  // }, [Store, favClicked, myFavs]);
+
+  // const renderProductList = () => (
+  //   <div className={`${styles.mainContainer}`}>
+  //     {trendingProducts.map((product) => (
+  //       <ProductItem key={product._id} product={product} favs={myFavs} />
+  //     ))}
+  //   </div>
+  // );
+
+  // const getMoreProducts = async () => {
+  //   if (!favClicked) {
+  //     await Store.getProducts();
+  //   }
+  // };
+
+  const dispatch = useAppDispatch();
+  const hasNext = useAppSelector((state) => (!favClicked ? state.products.hasNext : false));
+  const products = useAppSelector((state) => (!favClicked ? state.products.products : state.favorites.products));
 
   const renderProductList = () => (
     <div className={`${styles.mainContainer}`}>
-      {trendingProducts.map((product) => (
-        <ProductItem key={product._id} product={product} favs={myFavs} />
+      {products.map((product) => (
+        <ProductItem key={product._id} product={product} showFav={favClicked} />
       ))}
     </div>
   );
 
-  const getMoreProducts = async () => {
-    if (!favClicked) {
-      await Store.getProducts();
-    }
-  };
-
   return (
     <>
-      {Store.hasMore ? (
+      {hasNext ? (
         <InfiniteScroll
-          dataLength={Store.data.length}
-          hasMore={favClicked ? false : Store.hasMore}
-          next={getMoreProducts}
+          dataLength={products.length}
+          hasMore={hasNext}
+          next={() => dispatch(actions.productActions.fetchProducts())}
           loader={<p>Is loading ...</p>}
         >
           {renderProductList()}
@@ -50,4 +63,4 @@ const ProductsList: React.FC<IProductListProps> = ({ favClicked }) => {
   );
 };
 
-export default view(ProductsList);
+export default ProductsList;
