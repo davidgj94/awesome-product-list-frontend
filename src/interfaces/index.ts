@@ -20,3 +20,18 @@ export interface GetProductsResponse {
   offset: number;
   count: number;
 }
+
+export interface GetProductsRequest {
+  offset: number;
+  limit: number;
+  text?: string;
+}
+
+export interface SaveFavoriteResponse {
+  product: Product;
+  isFavorite: boolean;
+}
+
+export interface GetFavoritesResponse {
+  products: Product[];
+}

@@ -1,4 +1,4 @@
 export default {
   BACKEND_URL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000',
-  LIMIT: process.env.LIMIT || 10,
+  LIMIT: process.env.LIMIT ? Number(process.env.LIMIT) : 10,
 };

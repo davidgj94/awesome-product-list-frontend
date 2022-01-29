@@ -1,16 +1,23 @@
-import { GetProductsResponse } from '../interfaces';
+import { GetProductsResponse, GetProductsRequest, GetFavoritesResponse, SaveFavoriteResponse } from '../interfaces';
 import config from '../config';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
-const PRODUCTS_ENDPOINT = `${config.BACKEND_URL}/api/v1/product`;
+const axiosInstance = axios.create({ baseURL: `${config.BACKEND_URL}/api/v1` });
 
-export const getProducts = async (skip: number, limit: number, text?: string): Promise<GetProductsResponse> => {
-  const { data } = await axios.get<GetProductsResponse>(PRODUCTS_ENDPOINT, {
-    params: {
-      skip,
-      limit,
-      text,
-    },
+export const setAuth = (accessToken: string) =>
+  axiosInstance.interceptors.request.use((config) => {
+    config.headers = { ...config.headers, Authorization: `Bearer ${accessToken}` };
   });
-  return data;
+
+const handleResponse = <T>(axiosPromise: Promise<AxiosResponse<T>>) => axiosPromise.then(({ data }) => data);
+
+export const getProducts = (data: Omit<GetProductsRequest, 'limit'> & { limit?: number }) => {
+  data = { limit: config.LIMIT, ...data };
+  return handleResponse(axiosInstance.request<GetProductsResponse>({ url: '/products', data, method: 'GET' }));
 };
+
+export const saveFavorite = (productId: string) =>
+  handleResponse(axiosInstance.request<SaveFavoriteResponse>({ url: `/products/${productId}/fav`, method: 'POST' }));
+
+export const getFavorites = () =>
+  handleResponse(axiosInstance.request<GetFavoritesResponse>({ url: '/products/favorites', method: 'GET' }));
